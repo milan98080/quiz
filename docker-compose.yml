@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: quizuser
+      POSTGRES_PASSWORD: quizpass
+      POSTGRES_DB: quizdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizuser -d quizdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://quizuser:quizpass@postgres:5432/quizdb?schema=public"
+      SESSION_SECRET: "your-secret-key-change-in-production-min-32-chars"
+      HOST_PASSWORD: "admin123"
+      NEXT_PUBLIC_SOCKET_URL: "http://localhost:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:

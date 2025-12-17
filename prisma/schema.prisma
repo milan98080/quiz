@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Quiz {
+  id                    String          @id @default(uuid())
+  status                String          @default("setup")
+  round                 String          @default("not_started")
+  phase                 String          @default("waiting")
+  currentTeamId         String?
+  currentQuestionId     String?
+  selectedDomainId      String?
+  timerEndsAt           DateTime?
+  buzzSequence          String[]        @default([])
+  domainSelectingTeam   Int             @default(0)
+  questionsInDomain     Int             @default(0)
+  usedDomains           String[]        @default([])
+  totalDomainRounds     Int             @default(0)
+  completedDomainRounds Int             @default(0)
+  domainIndex           Int             @default(0)
+  answerTurnIndex       Int             @default(0)
+  questionSelectorIndex Int             @default(0)
+  pendingBuzzerAnswers  Json?           @default("{}")
+  buzzTimers            Json?           @default("{}")
+  lastRoundResults      Json?           @default("{}")
+  lastDomainAnswer      Json?           @default("{}")
+  createdAt             DateTime        @default(now())
+  teams                 Team[]
+  domains               Domain[]
+  buzzerQuestions       BuzzerQuestion[]
+  snapshots             Snapshot[]
+}
+
+model Snapshot {
+  id        String   @id @default(uuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  name      String
+  data      Json
+  createdAt DateTime @default(now())
+}
+
+model BuzzerQuestion {
+  id         String   @id @default(uuid())
+  number     Int
+  text       String
+  answer     String
+  options    String[]
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  isAnswered Boolean  @default(false)
+  passedFrom String?
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  captainName String?
+  score       Int      @default(0)
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sequence    Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Domain {
+  id        String     @id @default(uuid())
+  name      String
+  quizId    String
+  quiz      Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questions Question[]
+}
+
+model Question {
+  id              String   @id @default(uuid())
+  number          Int
+  text            String
+  answer          String
+  options         String[]
+  domainId        String
+  domain          Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  isAnswered      Boolean  @default(false)
+  passedFrom      String?
+  attemptedBy     String[] @default([])
+  selectedBy      String?
+  correctAnswer   String?
+  optionsViewed   Boolean  @default(false)
+}
