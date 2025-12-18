@@ -244,12 +244,12 @@ export default function SpectatorView({ quiz: initialQuiz }: { quiz: Quiz }) {
       const remaining = Math.max(0, Math.floor((new Date(quiz.timerEndsAt!).getTime() - Date.now()) / 1000));
       setTimeLeft(remaining);
       if (remaining === 0 && quiz.phase === 'showing_result' && quiz.round === 'domain') {
-        console.log('Timer expired, calling handleShowingResultExpiry');
-        import('@/lib/handleShowingResult').then(({ handleShowingResultExpiry }) => {
-          handleShowingResultExpiry(quiz.id).then(() => {
-            console.log('handleShowingResultExpiry completed');
-          });
-        });
+        console.log('Timer expired, calling API');
+        fetch('/api/timer-expiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quizId: quiz.id })
+        }).then(() => console.log('Timer expiry handled'));
       }
     }, 100);
     return () => clearInterval(interval);
