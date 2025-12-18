@@ -11,7 +11,8 @@ export function useSocket(quizId: string) {
 
   useEffect(() => {
     if (!socket) {
-      socket = io({ path: '/api/socket' });
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+      socket = io(socketUrl);
     }
 
     socket.emit('join-quiz', quizId);
