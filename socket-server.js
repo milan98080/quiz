@@ -1,9 +1,11 @@
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const { PrismaClient } = require('@prisma/client');
+const express = require('express');
 
-const prisma = new PrismaClient();
-const server = createServer();
+const app = express();
+app.use(express.json());
+
+const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' },
 });
@@ -21,8 +23,13 @@ io.on('connection', (socket) => {
   });
 });
 
-// Expose io globally for actions to use
-global.io = io;
+// HTTP endpoint to emit events from Next.js
+app.post('/emit', (req, res) => {
+  const { quizId, event, data } = req.body;
+  io.to(`quiz-${quizId}`).emit(event, data);
+  console.log(`Emitted ${event} to quiz-${quizId}`);
+  res.json({ success: true });
+});
 
 server.listen(4000, '0.0.0.0', () => {
   console.log('Socket.IO server running on port 4000');

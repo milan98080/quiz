@@ -16,6 +16,7 @@
     "@prisma/client": "^5.22.0",
     "autoprefixer": "^10.4.23",
     "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
     "iron-session": "^8.0.3",
     "lucide-react": "^0.460.0",
     "next": "14.2.16",
